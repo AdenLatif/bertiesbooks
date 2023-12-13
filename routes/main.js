@@ -51,7 +51,23 @@ module.exports = function(app, shopData) {
         })
         // saving data in database
         res.send(' Hello '+ req.body.first + ' '+ req.body.last +' you are now registered!  We will send an email to you at ' + req.body.email);                                                                              
-    }); 
+    });
+    
+    app.get('/listusers', function(req, res) {
+        // Query database to get all the users
+        let sqlquery = "SELECT * FROM userlogin";
+
+        // Execute sql query
+        db.query(sqlquery, (err, result) => {
+            if (err) {
+                res.redirect('./');
+            }
+            let newData = Object.assign({}, shopData, {listoutput:result});
+            console.log(newData)
+            res.render("listusers.ejs", newData)
+         });
+        });
+
     app.get('/list', function(req, res) {
         let sqlquery = "SELECT * FROM books"; // query database to get all the books
         // execute sql query
@@ -64,6 +80,79 @@ module.exports = function(app, shopData) {
             res.render("list.ejs", newData)
          });
     });
+
+
+    app.get('/loggedin', function (req,res) {
+        res.render('loggedin.ejs', shopData);
+        }); 
+    app.post('/loggedin', function(req, res) {
+        const username = req.body.username;
+        const password = req.body.password;
+    
+        // Check the username and password against the database
+        let sqlquery = "SELECT * FROM userlogin WHERE username = ?";
+        db.query(sqlquery, [username], (err, result) => {
+            if (err) {
+                console.error(err.message);
+                res.redirect('./login');
+            }
+    
+            if (result.length > 0) {
+                // User found, check password
+                const hashedPasswordFromDB = result[0].hashedPassword;
+    
+                const bcrypt = require('bcrypt');
+                bcrypt.compare(password, hashedPasswordFromDB, function(err, passwordMatch) {
+                    if (passwordMatch) {
+                        // Passwords match, consider the user as logged in
+                        res.render('loggedin.ejs', { message: 'Login successful! Welcome, ' + username });
+                    } else {
+                        res.render('loggedin.ejs', { message: 'Login failed. Invalid password for user: ' + username });
+                    }
+                });
+            } else {
+                // User not found
+                res.render('loggedin.ejs', { message: 'Login failed. User not found: ' + username });
+            }
+        });
+    });
+
+    app.get('/login', function (req,res) {
+        res.render('login.ejs', shopData);
+        }); 
+
+        app.post('/login', function(req, res) {
+            const username = req.body.username;
+            const password = req.body.password;
+        
+            // Check the username and password against the database
+            let sqlquery = "SELECT * FROM userlogin WHERE username = ?";
+            db.query(sqlquery, [username], (err, result) => {
+                if (err) {
+                    console.error(err.message);
+                    res.redirect('./login');
+                }
+        
+                if (result.length > 0) {
+                    // User found, check password
+                    const hashedPasswordFromDB = result[0].hashedPassword;
+        
+                    const bcrypt = require('bcrypt');
+                    bcrypt.compare(password, hashedPasswordFromDB, function(err, passwordMatch) {
+                        if (passwordMatch) {
+                            // Passwords match, consider the user as logged in
+                            res.send('Login successful for user: ' + username);
+                        } else {
+                            res.send('Invalid password');
+                        }
+                    });
+                } else {
+                    // User not found
+                    res.send('User not found');
+                }
+            });
+        });
+
 
     app.get('/addgame', function (req, res) {
         res.render('addgame.ejs', shopData);
@@ -96,3 +185,4 @@ module.exports = function(app, shopData) {
     });       
 
 }
+
