@@ -1,5 +1,12 @@
 module.exports = function(app, shopData) {
 
+    const redirectLogin = (req, res, next) => {
+        if (!req.session.userId ) {
+          res.redirect('./login')
+        } else { next (); }
+    }
+
+
     // Handle our routes
     app.get('/',function(req,res){
         res.render('index.ejs', shopData)
@@ -53,7 +60,8 @@ module.exports = function(app, shopData) {
         res.send(' Hello '+ req.body.first + ' '+ req.body.last +' you are now registered!  We will send an email to you at ' + req.body.email);                                                                              
     });
     
-    app.get('/listusers', function(req, res) {
+    app.get('/listusers',redirectLogin, function(req, res) {
+        
         // Query database to get all the users
         let sqlquery = "SELECT * FROM userlogin";
 
@@ -104,8 +112,10 @@ module.exports = function(app, shopData) {
                 const bcrypt = require('bcrypt');
                 bcrypt.compare(password, hashedPasswordFromDB, function(err, passwordMatch) {
                     if (passwordMatch) {
+                        req.session.userId = req.body.username;
                         // Passwords match, consider the user as logged in
-                        res.render('loggedin.ejs', { message: 'Login successful! Welcome, ' + username });
+                        res.render('loggedin.ejs', { message: 'Login successful! Welcome,  ' + username })
+                        ;
                     } else {
                         res.render('loggedin.ejs', { message: 'Login failed. Invalid password for user: ' + username });
                     }
@@ -130,7 +140,7 @@ module.exports = function(app, shopData) {
             db.query(sqlquery, [username], (err, result) => {
                 if (err) {
                     console.error(err.message);
-                    res.redirect('./login');
+            
                 }
         
                 if (result.length > 0) {
@@ -141,7 +151,7 @@ module.exports = function(app, shopData) {
                     bcrypt.compare(password, hashedPasswordFromDB, function(err, passwordMatch) {
                         if (passwordMatch) {
                             // Passwords match, consider the user as logged in
-                            res.send('Login successful for user: ' + username);
+                            res.send('Login successful for user: ' + (req.body.username)+'<a href='+'./'+'>Home</a>') ;
                         } else {
                             res.send('Invalid password');
                         }
@@ -153,6 +163,16 @@ module.exports = function(app, shopData) {
             });
         });
 
+        app.get('/logout', (req, res) => {
+            req.session.destroy(err => {
+                if (err) {
+                    console.error(err.message);
+                    return res.redirect('./');
+                }
+                res.send('you have been logged out. <a href='+'./'+'>Home</a>');
+            });
+        });
+    
 
     app.get('/addgame', function (req, res) {
         res.render('addgame.ejs', shopData);
