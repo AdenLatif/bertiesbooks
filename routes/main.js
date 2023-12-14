@@ -5,6 +5,7 @@ module.exports = function(app, shopData) {
           res.redirect('./login')
         } else { next (); }
     }
+    const { check, validationResult } = require('express-validator');
 
 
     // Handle our routes
@@ -35,32 +36,42 @@ module.exports = function(app, shopData) {
     app.get('/register', function (req,res) {
         res.render('register.ejs', shopData);                                                                     
     });                                                                                                 
-    app.post('/registered', function (req,res) {
-
-        // Saving data in database
-        const bcrypt = require('bcrypt');
-        const saltRounds = 10;
-        const plainPassword = req.body.password;
-        bcrypt.hash(plainPassword, saltRounds, function(err, hashedPassword) {
-
-                       // saving data in database
-           let sqlquery = "INSERT INTO userlogin (username, firstname, lastname, email, hashedPassword) VALUES (?,?,?,?,?)";
-           // execute sql query
-           let newrecord = [req.body.username, req.body.first,req.body.last,req.body.email, hashedPassword];
-           db.query(sqlquery, newrecord, (err, result) => {
-             if (err) {
-               return console.error(err.message);
-             }
-             else
-             res.send(' This user is added to database, name: '+ req.body.username + ' price '+ req.body.email);
-             });
-
-        })
+    app.post('/registered', [check('email').isEmail()], [check('password').isLength({ min: 8 })], function (req, res) {
+        const errors = validationResult(req);
+    
+        if (!errors.isEmpty()) {
+            // Redirect if there are validation errors
+            res.redirect('./register');
+        } else {
+            // Continue processing if there are no validation errors
+    
+            // Saving data in the database
+            const bcrypt = require('bcrypt');
+            const saltRounds = 10;
+            const plainPassword = req.body.password;
+    
+            bcrypt.hash(plainPassword, saltRounds, function (err, hashedPassword) {
+                // Handle bcrypt hashing and database insertion
+    
+                let sqlquery = "INSERT INTO userlogin (username, firstname, lastname, email, hashedPassword) VALUES (?,?,?,?,?)";
+                let newrecord = [req.sanitize(req.body.first), req.sanitize(req.body.username), req.sanitize(req.body.first), req.sanitize(req.body.first), req.sanitize(req.body.last), req.sanitize(req.body.email), hashedPassword];
+    
+                db.query(sqlquery, newrecord, (err, result) => {
+                    if (err) {
+                        // Handle database error
+                        return console.error(err.message);
+                    } else {
+                        // Send response once after successful database insertion
+                        res.send('Hello ' + req.sanitize(req.body.first) + ' ' + req.sanitize(req.body.last) + ' you are now registered! We will send an email to you at ' + req.sanitize(req.body.email));
+                    }
+                });
+            });
         // saving data in database
-        res.send(' Hello '+ req.body.first + ' '+ req.body.last +' you are now registered!  We will send an email to you at ' + req.body.email);                                                                              
+        res.send(' Hello '+ req.sanitize(req.body.first) + ' '+ req.sanitize(req.body.last) +' you are now registered!  We will send an email to you at ' + req.sanitize(req.body.email));    
+    };                                                                          
     });
     
-    app.get('/listusers',redirectLogin, function(req, res) {
+    app.get('/listusers', function(req, res) {
         
         // Query database to get all the users
         let sqlquery = "SELECT * FROM userlogin";
@@ -182,13 +193,13 @@ module.exports = function(app, shopData) {
            // saving data in database
            let sqlquery = "INSERT INTO forums (name, price, description, rating) VALUES (?,?,?,?)";
            // execute sql query
-           let newrecord = [req.body.name, req.body.price,req.body.description,req.body.rating];
+           let newrecord = [req.sanitize(req.body.name), req.sanitize(req.body.price),req.sanitize(req.body.description),req.sanitize(req.body.rating)];
            db.query(sqlquery, newrecord, (err, result) => {
              if (err) {
                return console.error(err.message);
              }
              else
-             res.send(' This game is added to database, name: '+ req.body.name + ' price '+ req.body.price);
+             res.send(' This game is added to database, name: '+ req.sanitize(req.body.name) + ' price '+ req.sanitize(req.body.price));
              });
        });    
                             
@@ -202,7 +213,39 @@ module.exports = function(app, shopData) {
           console.log(newData)
           res.render("bargains.ejs", newData)
         });
-    });       
+    });   
 
+    app.get('/gamelistapi', function(req, res) {
+        const https = require('https');
+    
+        const options = {
+            method: 'GET',
+            hostname: 'free-to-play-games-database.p.rapidapi.com',
+            port: null,
+            path: '/api/games',
+            headers: {
+                'X-RapidAPI-Key': '19c76a47b4msh6c33ede5e9be8fdp11e111jsnc1e6e238791e',
+                'X-RapidAPI-Host': 'free-to-play-games-database.p.rapidapi.com'
+            }
+        };
+    
+        const requestObject = https.request(options, function (apiResponse) {
+            const chunks = [];
+    
+            apiResponse.on('data', function (chunk) {
+                chunks.push(chunk);
+            });
+    
+            apiResponse.on('end', function () {
+                const body = Buffer.concat(chunks);
+                const gameListData = JSON.parse(body.toString());
+    
+                // Handle the gameListData as needed, for example, render a view
+                res.render('gamelistapi', { data: gameListData });
+            });
+        });
+    
+        requestObject.end();
+    });
 }
 

@@ -3,13 +3,17 @@ var express = require ('express')
 var ejs = require('ejs')
 var bodyParser= require ('body-parser')
 const mysql = require('mysql');
+const expressSanitizer = require('express-sanitizer');
 
 var session = require ('express-session');
+var validator = require ('express-validator');
 
 // Create the express application object
 const app = express()
 const port = 8000
 app.use(bodyParser.urlencoded({ extended: true }))
+
+app.use(expressSanitizer());
 
 app.use(session({
     secret: 'somerandomstuff',
@@ -53,7 +57,7 @@ app.set('view engine', 'ejs');
 app.engine('html', ejs.renderFile);
 
 // Define our data
-var shopData = {shopName: "Bertie's Books"}
+var shopData = {shopName: "Games4Gamers"}
 
 // Requires the main.js file inside the routes folder passing in the Express app and data as arguments.  All the routes will go in this file
 require("./routes/main")(app, shopData);

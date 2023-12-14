@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game List API</title>
+</head>
+<body>
+    <h1>Game List</h1>
+    <ul>
+        <% data.forEach(game => { %>
+            <li>
+                <strong>Title:</strong> <%= game.title %><br>
+                <strong>Released:</strong> <%= game.released %><br>
+                <strong>Review Summary:</strong> <%= game.reviewSummary %><br>
+                <strong>Price:</strong> <%= game.price %><br>
+                <strong>Link:</strong> <a href="<%= game.url %>" target="_blank">View on Steam</a><br>
+                <img src="<%= game.imgUrl %>" alt="<%= game.title %>">
+            </li>
+        <% }); %>
+    </ul>
+</body>
+</html>
