@@ -1,18 +1,60 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Add book to <%=shopName%></title>
-    <link rel="stylesheet"  type="text/css" href="/main.css" />
-  </head>
-  <body>
-    <h1><%=shopName%>: Add book</h1>
-    <form method="POST" action="/gameadded">
-        <p>name: <input id="name" type="text" name="name" value="" /></p>
-        <p>Price: <input id="price" type="text" name="price" value="" /></p>
-        <p>description: <input id="description" type="text" name="description" value="" /></p>
-        <p>rating: <input id="rating" type="text" name="rating" value="" /></p>
-        <input type="submit" value="Add game" />
-      </form>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Game to <%=shopName%></title>
+  <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+<body>
+  <header>
+    <h1><%=shopName%>: Add Game</h1>
+  </header>
 
+  <section>
+    <form method="POST" action="/gameadded" id="addGameForm" onsubmit="return validatePrice();">
+      <label for="name">Name:</label>
+      <input id="name" type="text" name="name" required />
+
+      <label for="price">Price:</label>
+      <input id="price" type="text" name="price" required />
+
+      <label for="description">Description:</label>
+      <input id="description" type="text" name="description" required />
+
+      <label for="rating">Rating:</label>
+      <input id="rating" type="text" name="rating" required />
+
+      <label for="genre">Genre:</label>
+      <select id="genre" name="genre" required>
+        <option value="" disabled selected>Select the genre</option>
+        <option value="action">Action</option>
+        <option value="adventure">Adventure</option>
+        <option value="rpg">RPG</option>
+        <option value="simulation">Simulation</option>
+        <option value="strategy">Strategy</option>
+      </select>
+
+      <label for="multiplayer">Multiplayer:</label>
+      <input type="checkbox" id="multiplayer" name="multiplayer" />
+
+      <input type="submit" value="Add Game" />
+    </form>
+  </section>
+
+  <script>
+    function validatePrice() {
+      var priceInput = document.getElementById('price');
+      var isValid = !isNaN(parseFloat(priceInput.value)) && isFinite(priceInput.value);
+      
+      if (!isValid) {
+        alert('Please enter a valid numeric value for the price.');
+        priceInput.value = ''; 
+        priceInput.focus();
+      }
+      
+      return isValid;
+    }
+  </script>
+</body>
+</html>

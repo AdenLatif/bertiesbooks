@@ -1,18 +1,74 @@
-<!doctype html>
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register for <%=shopName%></title>
-    <link rel="stylesheet"  type="text/css" href="/main.css" />
-  </head>
-  <body>
-    <h1>Register for <%=shopName%></h1>
-    <form method="POST" action="/registered">
-        <p>First name: <input id="first" type="text" name="first" value="first name" /></p>
-        <p>Last name: <input id="last" type="text" name="last" value="last name" /></p>
-        <p>Email: <input id="email" type="email" name="email" value="email" /></p>
-        <p>Username: <input id="username" type="text" name="username" value="username" /></p>
-        <p>Password: <input id="password" type="password" name="password" value="email"minlength="8" /></p>
-        <input type="submit" value="Register" />
-      </form>
-  </body>
+    <link rel="stylesheet" type="text/css" href="/main.css" />
+</head>
+
+<body>
+    <header>
+        <h1>Register for <%=shopName%></h1>
+    </header>
+
+    <section>
+        <form method="POST" action="/registered" id="registrationForm">
+            <label for="first">First name:</label>
+            <input id="first" type="text" name="first" placeholder="Enter your first name" required />
+
+            <label for="last">Last name:</label>
+            <input id="last" type="text" name="last" placeholder="Enter your last name" required />
+
+            <label for="email">Email:</label>
+            <input id="email" type="email" name="email" placeholder="Enter your email" required />
+
+            <label for="username">Username:</label>
+            <input id="username" type="text" name="username" placeholder="Choose a username" required />
+
+            <label for="password">Password:</label>
+            <input id="password" type="password" name="password" placeholder="Choose a password" minlength="8" required />
+
+            <label for="confirmPassword">Confirm Password:</label>
+            <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Confirm your password" minlength="8" required />
+            <span id="passwordError" style="color: red;"></span>
+
+            <input type="submit" value="Register" />
+        </form>
+    </section>
+
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function (event) {
+            // Check if passwords match
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                event.preventDefault(); // Prevent form submission
+                document.getElementById('passwordError').innerText = 'Passwords do not match.';
+            } else {
+                document.getElementById('passwordError').innerText = '';
+            }
+        });
+    </script>
+
+    <label for="country">Country:</label>
+    <select id="country" name="country" required>
+        <option value="" disabled selected>Select your country</option>
+        <option value="usa">USA</option>
+        <option value="canada">Canada</option>
+        <option value="unitedkingdom">United Kingdom</option>
+    </select>
+
+    <label>
+        <input type="checkbox" name="termsAndConditions" required />
+        I agree to the <a href="/terms" target="_blank">terms and conditions</a>.
+    </label>
+
+    <input type="submit" value="Register" />
+    </form>
+    </section>
+</body>
+
 </html>
